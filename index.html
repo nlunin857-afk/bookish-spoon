@@ -3,27 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Анимация облёта ЖК дроном</title>
+  <title>Облёт ЖК с высоты</title>
   <style>
     :root {
-      /* Основная кривая плавности */
-      --ease-custom: cubic-bezier(.4, 0, .2, 1);
-      /* Общая длительность сцены */
-      --duration: 9s;
+      /* Плавная кинематографичная кривая */
+      --ease-cine: cubic-bezier(.33, 0, .2, 1);
+      /* Длительность облёта */
+      --duration: 12s;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background-color: #1a1a1a;
+      background-color: #0e0e0e;
       font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
@@ -39,48 +35,32 @@
       background-color: #000;
     }
 
-    /* 1. Фон с ЖК (реальное фото) */
+    /* Фото ЖК — «камера» движется через transform */
     .building-bg {
       position: absolute;
-      top: -5%;
-      left: -5%;
-      width: 110%;
-      height: 110%;
-      background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.45) 100%),
-                  url('assets/building.jpg') center 20%/cover no-repeat;
+      top: -15%;
+      left: -15%;
+      width: 130%;
+      height: 130%;
+      background: url('assets/building.jpg') center 30%/cover no-repeat;
+      transform-origin: 60% 40%;
       opacity: 0;
-      transform: scale(1);
-      animation: building-action var(--duration) var(--ease-custom) forwards;
+      animation: aerial-flyover var(--duration) var(--ease-cine) forwards;
       will-change: transform, opacity;
     }
 
-    /* 2. Дрон (нарисован через SVG, стиль DJI Mini) */
-    .drone {
+    /* Кинематографичная виньетка поверх кадра */
+    .vignette {
       position: absolute;
-      top: 30%;
-      left: -30%; /* Начинает за пределами экрана слева */
-      width: 150px;
-      height: 96px;
-      z-index: 2;
-      filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.4));
-      animation: drone-flight var(--duration) var(--ease-custom) forwards;
-      will-change: left, top, transform;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(120% 80% at 50% 42%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.45) 100%),
+        linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.55) 100%);
     }
 
-    .drone svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    /* Вращение винтов */
-    .propeller {
-      transform-box: fill-box;
-      transform-origin: center;
-      animation: spin 0.12s linear infinite;
-    }
-
-    /* 3. Заголовок */
+    /* Заголовок */
     .title-container {
       position: absolute;
       bottom: 60px;
@@ -91,7 +71,7 @@
       z-index: 3;
       opacity: 0;
       transform: translateY(30px);
-      animation: title-appear 2s var(--ease-custom) 6.5s forwards;
+      animation: title-appear 2s var(--ease-cine) 9s forwards;
     }
 
     .title-container h1 {
@@ -99,119 +79,52 @@
       font-size: 28px;
       font-weight: 700;
       line-height: 1.3;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+      letter-spacing: .01em;
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75);
       margin-bottom: 8px;
     }
 
     .title-container p {
-      color: #cccccc;
+      color: #d6d6d6;
       font-size: 16px;
-      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.7);
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.75);
     }
 
-    /* --- АНИМАЦИИ --- */
-
-    /* Анимация ЖК: Fade-in (0-15%) -> Микро-зум и панорамирование под угол дрона (15-100%) */
-    @keyframes building-action {
+    /* --- АНИМАЦИЯ КАМЕРЫ --- */
+    /* Съёмка с дрона: старт крупно на верхних этажах, плавный спуск
+       вдоль фасада с лёгким боковым дрейфом и креном (как в полёте) */
+    @keyframes aerial-flyover {
       0% {
         opacity: 0;
-        transform: scale(1) translate(0, 0);
+        transform: scale(1.42) translate(7%, -13%) rotate(1.4deg);
       }
-      15% {
+      12% {
         opacity: 1;
-        transform: scale(1.02) translate(0, 0);
+      }
+      40% {
+        transform: scale(1.30) translate(4%, -4%) rotate(0.7deg);
       }
       70% {
-        /* Имитация изменения угла обзора во время полёта дрона */
-        transform: scale(1.08) translate(-15px, 10px);
+        transform: scale(1.20) translate(-4%, 4%) rotate(-0.4deg);
       }
       100% {
         opacity: 1;
-        transform: scale(1.1) translate(-10px, 5px);
+        transform: scale(1.13) translate(-2%, 8%) rotate(-0.8deg);
       }
     }
 
-    /* Анимация дрона: вылет по дуге, наклон корпуса, покачивание и финальное зависание */
-    @keyframes drone-flight {
-      /* 0% - 15%: Ждём появления ЖК, дрон за кадром */
-      0%, 15% {
-        left: -40%;
-        top: 60%;
-        transform: rotate(15deg) translateY(0) scale(0.8);
-      }
-      /* 35%: Дрон влетает сбоку, набирая высоту по дуге (наклонен вперёд) */
-      35% {
-        left: 20%;
-        top: 45%;
-        transform: rotate(12deg) translateY(-8px) scale(0.9);
-      }
-      /* 55%: Апекс дуги перед фасадом здания */
-      55% {
-        left: 55%;
-        top: 35%;
-        transform: rotate(5deg) translateY(6px) scale(1);
-      }
-      /* 75%: Завершение облёта, выравнивание корпуса */
-      75% {
-        left: 65%;
-        top: 30%;
-        transform: rotate(-2deg) translateY(-4px) scale(1.05);
-      }
-      /* 85% - 100%: Стабилизация и мягкое зависание (hovering) */
-      85% {
-        left: 63%;
-        top: 31%;
-        transform: rotate(0deg) translateY(3px) scale(1.05);
-      }
-      92% {
-        left: 63%;
-        top: 30%;
-        transform: rotate(0deg) translateY(-2px) scale(1.05);
-      }
-      100% {
-        left: 63%;
-        top: 30.5%;
-        transform: rotate(0deg) translateY(0) scale(1.05);
-      }
-    }
-
-    /* Вращение пропеллеров дрона */
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-
-    /* Анимация появления заголовка снизу вверх */
     @keyframes title-appear {
-      0% {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      0%   { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
 
-    /* --- ДОСТУПНОСТЬ: Уважение prefers-reduced-motion --- */
+    /* --- ДОСТУПНОСТЬ --- */
     @media (prefers-reduced-motion: reduce) {
       .building-bg {
         animation: none;
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1.13) translate(-2%, 8%) rotate(-0.8deg);
       }
-
-      .drone {
-        animation: none;
-        left: 60%;
-        top: 30%;
-        transform: none;
-      }
-
-      .propeller {
-        animation: none;
-      }
-
       .title-container {
         animation: none;
         opacity: 1;
@@ -224,74 +137,7 @@
 
   <div class="scene-container">
     <div class="building-bg"></div>
-
-    <div class="drone" role="img" aria-label="Дрон облетает жилой комплекс">
-      <svg viewBox="0 0 300 190" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#f2f3f5"/>
-            <stop offset="1" stop-color="#c9ccd1"/>
-          </linearGradient>
-          <linearGradient id="armGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="#d7dade"/>
-            <stop offset="1" stop-color="#a9adb3"/>
-          </linearGradient>
-        </defs>
-
-        <!-- Задние лучи (за корпусом) -->
-        <g stroke="url(#armGrad)" stroke-width="9" stroke-linecap="round">
-          <line x1="150" y1="98" x2="58"  y2="150"/>
-          <line x1="150" y1="98" x2="242" y2="150"/>
-        </g>
-
-        <!-- Пропеллеры (размытые диски + лопасти) -->
-        <g>
-          <circle cx="52"  cy="52"  r="46" fill="rgba(180,185,190,0.18)"/>
-          <circle cx="248" cy="52"  r="46" fill="rgba(180,185,190,0.18)"/>
-          <circle cx="58"  cy="150" r="42" fill="rgba(180,185,190,0.16)"/>
-          <circle cx="242" cy="150" r="42" fill="rgba(180,185,190,0.16)"/>
-
-          <g class="propeller">
-            <ellipse cx="52" cy="52" rx="46" ry="6" fill="#6d7278"/>
-            <ellipse cx="52" cy="52" rx="6" ry="46" fill="#6d7278"/>
-          </g>
-          <g class="propeller" style="animation-delay:-0.03s">
-            <ellipse cx="248" cy="52" rx="46" ry="6" fill="#6d7278"/>
-            <ellipse cx="248" cy="52" rx="6" ry="46" fill="#6d7278"/>
-          </g>
-          <g class="propeller" style="animation-delay:-0.06s">
-            <ellipse cx="58" cy="150" rx="42" ry="5" fill="#6d7278"/>
-            <ellipse cx="58" cy="150" rx="5" ry="42" fill="#6d7278"/>
-          </g>
-          <g class="propeller" style="animation-delay:-0.09s">
-            <ellipse cx="242" cy="150" rx="42" ry="5" fill="#6d7278"/>
-            <ellipse cx="242" cy="150" rx="5" ry="42" fill="#6d7278"/>
-          </g>
-        </g>
-
-        <!-- Передние лучи (перед корпусом) -->
-        <g stroke="url(#armGrad)" stroke-width="9" stroke-linecap="round">
-          <line x1="150" y1="98" x2="52"  y2="52"/>
-          <line x1="150" y1="98" x2="248" y2="52"/>
-        </g>
-        <!-- Моторы -->
-        <g fill="#4a4e54">
-          <circle cx="52"  cy="52"  r="9"/>
-          <circle cx="248" cy="52"  r="9"/>
-          <circle cx="58"  cy="150" r="8"/>
-          <circle cx="242" cy="150" r="8"/>
-        </g>
-
-        <!-- Корпус -->
-        <rect x="118" y="78" width="64" height="46" rx="14" fill="url(#bodyGrad)" stroke="#b3b7bc" stroke-width="1.5"/>
-        <!-- Подвес камеры (gimbal) -->
-        <rect x="138" y="118" width="24" height="16" rx="5" fill="#3a3d42"/>
-        <circle cx="150" cy="127" r="6.5" fill="#111318"/>
-        <circle cx="148" cy="125" r="2" fill="#5aa9ff"/>
-        <!-- Индикатор -->
-        <circle cx="150" cy="90" r="3.2" fill="#ff5a5a"/>
-      </svg>
-    </div>
+    <div class="vignette"></div>
 
     <div class="title-container">
       <h1>Новый уровень жизни</h1>
