@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Облёт ЖК с высоты</title>
+  <title>Облёт ЖК по дуге</title>
   <style>
     :root {
-      /* Плавная кинематографичная кривая */
-      --ease-cine: cubic-bezier(.33, 0, .2, 1);
-      /* Длительность облёта */
-      --duration: 12s;
+      --ease-cine: cubic-bezier(.37, 0, .28, 1);
+      --duration: 9s;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,7 +21,6 @@
       font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* Контейнер сцены (вертикальный формат) */
     .scene-container {
       position: relative;
       width: 100%;
@@ -33,102 +30,40 @@
       border-radius: 16px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
       background-color: #000;
+      perspective: 1200px;
     }
 
-    /* Фото ЖК — «камера» движется через transform */
+    /* Фото ЖК — «камера» огибает дом по дуге слева направо */
     .building-bg {
       position: absolute;
-      top: -15%;
-      left: -15%;
-      width: 130%;
-      height: 130%;
-      background: url('assets/building.jpg') center 30%/cover no-repeat;
-      transform-origin: 60% 40%;
-      opacity: 0;
-      animation: aerial-flyover var(--duration) var(--ease-cine) forwards;
-      will-change: transform, opacity;
+      top: -20%;
+      left: -20%;
+      width: 140%;
+      height: 140%;
+      background: url('assets/building.jpg') center 35%/cover no-repeat;
+      transform-origin: 50% 45%;
+      animation: orbit-arc var(--duration) var(--ease-cine) infinite alternate;
+      will-change: transform;
     }
 
-    /* Кинематографичная виньетка поверх кадра */
-    .vignette {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      background:
-        radial-gradient(120% 80% at 50% 42%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.45) 100%),
-        linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.55) 100%);
-    }
-
-    /* Заголовок */
-    .title-container {
-      position: absolute;
-      bottom: 60px;
-      left: 0;
-      width: 100%;
-      padding: 0 30px;
-      text-align: center;
-      z-index: 3;
-      opacity: 0;
-      transform: translateY(30px);
-      animation: title-appear 2s var(--ease-cine) 9s forwards;
-    }
-
-    .title-container h1 {
-      color: #ffffff;
-      font-size: 28px;
-      font-weight: 700;
-      line-height: 1.3;
-      letter-spacing: .01em;
-      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75);
-      margin-bottom: 8px;
-    }
-
-    .title-container p {
-      color: #d6d6d6;
-      font-size: 16px;
-      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.75);
-    }
-
-    /* --- АНИМАЦИЯ КАМЕРЫ --- */
-    /* Съёмка с дрона: старт крупно на верхних этажах, плавный спуск
-       вдоль фасада с лёгким боковым дрейфом и креном (как в полёте) */
-    @keyframes aerial-flyover {
+    /* Облёт по дуге: старт слева с разворотом камеры,
+       подъём к вершине дуги по центру и уход вправо */
+    @keyframes orbit-arc {
       0% {
-        opacity: 0;
-        transform: scale(1.42) translate(7%, -13%) rotate(1.4deg);
+        transform: rotateY(-10deg) scale(1.26) translate(9%, 3%);
       }
-      12% {
-        opacity: 1;
-      }
-      40% {
-        transform: scale(1.30) translate(4%, -4%) rotate(0.7deg);
-      }
-      70% {
-        transform: scale(1.20) translate(-4%, 4%) rotate(-0.4deg);
+      50% {
+        transform: rotateY(0deg) scale(1.20) translate(0%, -5%);
       }
       100% {
-        opacity: 1;
-        transform: scale(1.13) translate(-2%, 8%) rotate(-0.8deg);
+        transform: rotateY(10deg) scale(1.26) translate(-9%, 3%);
       }
     }
 
-    @keyframes title-appear {
-      0%   { opacity: 0; transform: translateY(30px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    /* --- ДОСТУПНОСТЬ --- */
     @media (prefers-reduced-motion: reduce) {
       .building-bg {
         animation: none;
-        opacity: 1;
-        transform: scale(1.13) translate(-2%, 8%) rotate(-0.8deg);
-      }
-      .title-container {
-        animation: none;
-        opacity: 1;
-        transform: none;
+        transform: scale(1.2) translate(0, -5%);
       }
     }
   </style>
@@ -137,12 +72,6 @@
 
   <div class="scene-container">
     <div class="building-bg"></div>
-    <div class="vignette"></div>
-
-    <div class="title-container">
-      <h1>Новый уровень жизни</h1>
-      <p>Жилой комплекс премиум-класса</p>
-    </div>
   </div>
 
 </body>
